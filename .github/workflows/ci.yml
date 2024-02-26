@@ -109,24 +109,38 @@ jobs:
 
     strategy:
       matrix:
+        runtime: [node, nsolid]
         node-version: [14, 16, 18, 20]
         os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - runtime: nsolid
+            nsolid-version: 5
         exclude:
-          # excludes node 14 on Windows
           - os: windows-latest
+            runtime: node
             node-version: 14
-
+          - runtime: nsolid
+            node-version: 14
+          - runtime: nsolid
+            node-version: 16
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
       - name: Use Node.js
+        if: ${{ matrix.runtime == 'node'}}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: package.json
+      - uses: actions/checkout@v4
+      - uses: nodesource/setup-nsolid@v1
+        if: ${{ matrix.runtime == 'nsolid'}}
+        with:
+          node-version: ${{ matrix.node-version }}
+          nsolid-version: ${{ matrix.nsolid-version }}
 
       - name: Install
         run: |
